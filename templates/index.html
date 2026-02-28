@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Global Mobility Application Analyzer</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+</head>
+<body>
+
+<div class="header">
+  <div class="label">ML Inference</div>
+  <h1>Global Mobility Application<br>Analyzer</h1>
+  <p>Fill in the employment &amp; company details to run the model.</p>
+</div>
+
+<div class="form-card">
+  <form id="predForm">
+
+    <!-- ── Employee Info ── -->
+    <div class="section-title">Employee Info</div>
+    <div class="grid">
+      <div class="field">
+        <label for="continent">Continent</label>
+        <select id="continent" name="continent" required>
+          <option value="">Select…</option>
+          <option value="Asia">Asia</option>
+          <option value="Europe">Europe</option>
+          <option value="Africa">Africa</option>
+          <option value="North America">North America</option>
+          <option value="South America">South America</option>
+          <option value="Oceania">Oceania</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="education">Education Level</label>
+        <select id="education" name="education_of_employee" required>
+          <option value="">Select…</option>
+          <option value="High School">High School</option>
+          <option value="Bachelor's">Bachelor's</option>
+          <option value="Master's">Master's</option>
+          <option value="Doctorate">Doctorate</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:18px;">
+      <div class="field">
+        <label>Has Job Experience?</label>
+        <div class="toggle-group">
+          <input type="radio" id="exp_y" name="has_job_experience" value="Y" required>
+          <label for="exp_y">Yes</label>
+          <input type="radio" id="exp_n" name="has_job_experience" value="N">
+          <label for="exp_n">No</label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Requires Job Training?</label>
+        <div class="toggle-group">
+          <input type="radio" id="train_y" name="requires_job_training" value="Y" required>
+          <label for="train_y">Yes</label>
+          <input type="radio" id="train_n" name="requires_job_training" value="N">
+          <label for="train_n">No</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Job Details ── -->
+    <div class="section-title">Job Details</div>
+    <div class="grid">
+      <div class="field">
+        <label for="region">Region of Employment</label>
+        <select id="region" name="region_of_employment" required>
+          <option value="">Select…</option>
+          <option value="Northeast">Northeast</option>
+          <option value="South">South</option>
+          <option value="West">West</option>
+          <option value="Midwest">Midwest</option>
+          <option value="Island">Island</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Full Time Position?</label>
+        <div class="toggle-group" style="margin-top:6px;">
+          <input type="radio" id="ft_y" name="full_time_position" value="Y" required>
+          <label for="ft_y">Yes</label>
+          <input type="radio" id="ft_n" name="full_time_position" value="N">
+          <label for="ft_n">No</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:18px;">
+      <div class="field">
+        <label for="wage">Prevailing Wage</label>
+        <input type="number" id="wage" name="prevailing_wage"
+               placeholder="e.g. 148138.59" step="0.01" min="0" required>
+      </div>
+      <div class="field">
+        <label for="unit">Unit of Wage</label>
+        <select id="unit" name="unit_of_wage" required>
+          <option value="">Select…</option>
+          <option value="Year">Year</option>
+          <option value="Month">Month</option>
+          <option value="Bi-Weekly">Bi-Weekly</option>
+          <option value="Week">Week</option>
+          <option value="Hour">Hour</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ── Company Info ── -->
+    <div class="section-title">Company Info</div>
+    <div class="grid">
+      <div class="field">
+        <label for="employees">No. of Employees</label>
+        <input type="number" id="employees" name="no_of_employees"
+               placeholder="e.g. 2430" min="1" required>
+      </div>
+      <div class="field">
+        <label for="age">Company Age (years)</label>
+        <input type="number" id="age" name="company_age"
+               placeholder="e.g. 40" min="0" required>
+      </div>
+    </div>
+
+    <div class="submit-wrap">
+      <button type="submit">Run Prediction →</button>
+    </div>
+  </form>
+</div>
+
+<div class="result-box" id="resultBox">
+  <div class="result-label">Prediction Result</div>
+  <div class="result-value" id="resultValue">—</div>
+  <div class="result-raw"   id="resultRaw"></div>
+</div>
+
+<script>
+  document.getElementById('predForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+
+    const payload = {
+      continent:             fd.get('continent'),
+      education_of_employee: fd.get('education_of_employee'),
+      has_job_experience:    fd.get('has_job_experience'),
+      requires_job_training: fd.get('requires_job_training'),
+      no_of_employees:       parseInt(fd.get('no_of_employees')),
+      region_of_employment:  fd.get('region_of_employment'),
+      prevailing_wage:       parseFloat(fd.get('prevailing_wage')),
+      unit_of_wage:          fd.get('unit_of_wage'),
+      full_time_position:    fd.get('full_time_position'),
+      company_age:           parseInt(fd.get('company_age')),
+    };
+
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.textContent = 'Running…';
+    btn.disabled = true;
+
+    try {
+      const res  = await fetch('/predict', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      const box  = document.getElementById('resultBox');
+      const val  = document.getElementById('resultValue');
+      const raw  = document.getElementById('resultRaw');
+
+      box.classList.add('visible');
+
+      const prediction = data.prediction ?? data.result ?? data.status ?? JSON.stringify(data);
+      const isApproved = (
+        String(prediction).toLowerCase().includes('certif') ||
+        String(prediction) === '1' ||
+        String(prediction).toLowerCase().includes('approv')
+      );
+
+      val.textContent = prediction;
+      val.className   = 'result-value ' + (isApproved ? 'approved' : 'denied');
+      raw.textContent = 'Full response:\n' + JSON.stringify(data, null, 2);
+
+      box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) {
+      alert('Request failed: ' + err.message);
+    } finally {
+      btn.textContent = 'Run Prediction →';
+      btn.disabled    = false;
+    }
+  });
+</script>
+</body>
+</html>

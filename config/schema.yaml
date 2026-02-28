@@ -1,0 +1,54 @@
+columns:
+  - case_id: category
+  - continent: category
+  - education_of_employee: category
+  - has_job_experience: category
+  - requires_job_training: category
+  - no_of_employees: numerical
+  - yr_of_estab: numerical
+  - region_of_employment: category
+  - prevailing_wage: numerical
+  - unit_of_wage: category
+  - full_time_position: category
+  - case_status: category
+
+numerical_columns:
+  - no_of_employees
+  - yr_of_estab
+  - prevailing_wage
+
+categorical_columns:
+  - case_id
+  - continent
+  - education_of_employee
+  - has_job_experience
+  - requires_job_training
+  - region_of_employment
+  - unit_of_wage
+  - full_time_position
+  - case_status
+
+drop_columns:
+  - case_id
+  - yr_of_estab
+
+or_columns:
+  - has_job_experience
+  - requires_job_training
+  - education_of_employee
+  - full_time_position
+
+oh_columns:
+  - continent
+  - unit_of_wage
+  - region_of_employment
+
+transform_columns:
+  - no_of_employees
+  - company_age
+
+# For Data Transformation
+num_features:
+  - no_of_employees
+  - prevailing_wage
+  - company_age

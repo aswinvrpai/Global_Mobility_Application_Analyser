@@ -1,5 +1,14 @@
 # Global_Mobility_Application_Analyser
 
+## Workflow
+
+1. constant
+2. config_entity
+3. artifact_entity
+4. component
+5. pipeline
+6. app.py / demo.py
+
 # How to run
 1. Clone the repository and install dependencies:
     ```bash
@@ -17,4 +26,8 @@
        ```bash  
             python main.py
          ```
+4. Export the mongo db url
+        ```bash
+            export MONGO_DB_URL="your_mongo_db_url"
+        ```
 
